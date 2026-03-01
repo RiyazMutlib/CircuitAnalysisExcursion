@@ -30,9 +30,7 @@ struct Branch
     int dst;
     double value;
     bool isVoltage;
-
-    // Added because it is needed later for MNA: index of this voltage source among all voltage sources (0..M-1)
-    int vsrcIndex;
+    int vsrcIndex; // Added because it is needed later for MNA: index of this voltage source among all voltage sources (0..M-1)
 };
 
 vector<Branch> branches;
@@ -144,7 +142,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
 
     // Assign an index to each voltage source so we know where its current lives in the solution
     int vsCounter = 0;
-    for (auto& br : branches)
+    for (auto &br : branches)
     {
         if (br.isVoltage)
             br.vsrcIndex = vsCounter++;
@@ -213,6 +211,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
         rhs[rowcol] = br.value;
     }
 }
+
 
 
 
