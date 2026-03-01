@@ -142,7 +142,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
 
     // Assign an index to each voltage source so we know where its current lives in the solution
     int vsCounter = 0;
-    for (auto &br : branches)
+    for (auto& br : branches)
     {
         if (br.isVoltage)
             br.vsrcIndex = vsCounter++;
@@ -159,7 +159,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
     // Stamp resistors:
     // For resistor between nodes a and b with conductance g = 1/R
     // add g to diagonals, -g to off-diagonals (if both not ground)
-    for (const auto &br : branches)
+    for (const auto& br : branches)
     {
         if (br.isVoltage)
             continue;
@@ -185,7 +185,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
     // For voltage source k between src->dst with value Vs:
     // KCL coupling: node rows connect to column (N+k)
     // Constraint row: row (N+k) enforces V(src) - V(dst) = Vs
-    for (const auto &br : branches)
+    for (const auto& br : branches)
     {
         if (!br.isVoltage)
             continue;
@@ -211,6 +211,7 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
         rhs[rowcol] = br.value;
     }
 }
+
 
 
 
