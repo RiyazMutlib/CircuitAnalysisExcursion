@@ -1,11 +1,11 @@
 /*
-EEL4837 – Excursion 1: Circuit Analysis Tool
+EEL4837 â€“ Excursion 1: Circuit Analysis Tool
 Single-file solution, visually organized into 3 parts:
-  Jhon – Input & Data Preparation
-  Riyaz – Matrix Construction (MNA setup)
-  Christian – Solver + Output + Integration
+  Jhon â€“ Input & Data Preparation
+  Riyaz â€“ Matrix Construction (MNA setup)
+  Christian â€“ Solver + Output + Integration
 
-Matches assignment I/O and constraints.
+Matches assignment I/O and constraints (No extra credit yet).
 */
 
 #include <iostream>
@@ -21,7 +21,7 @@ Matches assignment I/O and constraints.
 using namespace std;
 
 
-// Jhon – INPUT & DATA PREPARATION
+// Jhon â€“ INPUT & DATA PREPARATION
 
 struct Branch
 {
@@ -130,7 +130,7 @@ void printMatrix(const vector<vector<double>>& A)
 }
 
 
-// Riyaz – MATRIX CONSTRUCTION (MNA setup)
+// Riyaz â€“ MATRIX CONSTRUCTION (MNA setup)
 
 void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int& M, int& B)
 {
@@ -213,5 +213,6 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
         rhs[rowcol] = br.value;
     }
 }
+
 
 
