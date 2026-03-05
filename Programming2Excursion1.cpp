@@ -18,6 +18,7 @@ Matches assignment I/O and constraints (No extra credit yet).
 #include <string>
 #include <cmath>
 #include <algorithm>
+#include <cstdio>
 using namespace std;
 
 
@@ -213,6 +214,148 @@ void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int&
 }
 
 
+// Christian – SOLVER + OUTPUT + INTEGRATION
 
+// Gaussian elimination with partial pivoting to solve A x = rhs
+vector<double> solveSystem(vector<vector<double>> A, vector<double> b)
+{
+    int n = A.size();
+    // Augment matrix with b
+    for (int i = 0; i < n; i++) {
+        A[i].push_back(b[i]);
+    }
 
+    // Forward elimination with partial pivoting
+    for (int i = 0; i < n; i++) {
+        // Find pivot
+        int maxRow = i;
+        for (int k = i + 1; k < n; k++) {
+            if (abs(A[k][i]) > abs(A[maxRow][i])) {
+                maxRow = k;
+            }
+        }
+        swap(A[i], A[maxRow]);
 
+        if (abs(A[i][i]) < 1e-12) {
+            cout << "Warning: Matrix may be singular!" << endl;
+        }
+
+        for (int k = i + 1; k < n; k++) {
+            double c = -A[k][i] / A[i][i];
+            for (int j = i; j <= n; j++) {
+                if (i == j)
+                    A[k][j] = 0.0;
+                else
+                    A[k][j] += c * A[i][j];
+            }
+        }
+    }
+
+    // Back substitution
+    vector<double> x(n, 0.0);
+    for (int i = n - 1; i >= 0; i--) {
+        x[i] = A[i][n];
+        for (int j = i + 1; j < n; j++) {
+            x[i] -= A[i][j] * x[j];
+        }
+        x[i] /= A[i][i];
+    }
+    return x;
+}
+
+// This matches the exact sample output shown in the assignment PDF
+string formatNumber(double val)
+{
+    char buf[64];
+    sprintf(buf, "%.3f", val);
+    string s = buf;
+    size_t dot = s.find('.');
+    if (dot != string::npos)
+    {
+        s.erase(s.find_last_not_of('0') + 1, string::npos);
+        if (!s.empty() && s.back() == '.')
+            s.pop_back();
+    }
+    return s;
+}
+
+// Write the final output to output.txt in the exact required format
+void writeOutput(const vector<double>& nodePotentials, 
+                 const vector<double>& branchVoltages, 
+                 const vector<double>& branchCurrents)
+{
+    ofstream fout("output.txt");
+    if (!fout.is_open()) {
+        cout << "Error! Could not create output.txt\n";
+        return;
+    }
+
+    // e1 e2 ... en
+    for (double e : nodePotentials) {
+        fout << formatNumber(e) << " ";
+    }
+    // v1 v2 ... vn
+    for (double v : branchVoltages) {
+        fout << formatNumber(v) << " ";
+    }
+    // i1 i2 ... in
+    for (double i : branchCurrents) {
+        fout << formatNumber(i) << " ";
+    }
+    fout << endl;
+    fout.close();
+}
+
+int main()
+{
+    readNetlist();
+    removeGround();
+    NodeIndex();
+
+    vector<vector<double>> A;
+    vector<double> rhs;
+    int N, M, B;
+
+    buildMNASystem(A, rhs, N, M, B);
+
+    // Solve the system
+    vector<double> x = solveSystem(A, rhs);
+
+    // Build potentials map (ground is 0.0)
+    map<int, double> potentials;
+    potentials[0] = 0.0;
+    for (auto& p : node_to_index) {
+        potentials[p.first] = x[p.second];
+    }
+
+    // Compute branch voltages and currents
+    vector<double> branchVoltages;
+    vector<double> branchCurrents;
+
+    for (const auto& br : branches) {
+        double v = potentials[br.src] - potentials[br.dst];
+        double i_val;
+        if (br.isVoltage) {
+            i_val = x[N + br.vsrcIndex];   // uses MNA sign convention (matches sample)
+        } else {
+            i_val = (abs(br.value) > 1e-12) ? v / br.value : 0.0;
+        }
+        branchVoltages.push_back(v);
+        branchCurrents.push_back(i_val);
+    }
+
+    // Collect node potentials in matrix order
+    vector<double> nodePotentials;
+    for (auto& p : node_to_index) {
+        nodePotentials.push_back(potentials[p.first]);
+    }
+
+    // Write output file
+    writeOutput(nodePotentials, branchVoltages, branchCurrents);
+
+    cout << "Program completed successfully. Check output.txt" << endl;
+    // printBranches();     // uncomment for debugging
+    // printNodeMap();
+
+    return 0;
+}
