@@ -1,9 +1,9 @@
 /*
-EEL4837 – Excursion 1: Circuit Analysis Tool
+EEL4837 - Excursion 1: Circuit Analysis Tool
 Single-file solution, visually organized into 3 parts:
-  Jhon – Input & Data Preparation
-  Riyaz – Matrix Construction (MNA setup)
-  Christian – Solver + Output + Integration
+  Jhon - Input & Data Preparation
+  Riyaz - Matrix Construction (MNA setup)
+  Christian - Solver + Output + Integration
 
 Matches assignment I/O and constraints (No extra credit yet).
 */
@@ -21,7 +21,7 @@ Matches assignment I/O and constraints (No extra credit yet).
 using namespace std;
 
 
-// Jhon – INPUT & DATA PREPARATION
+// Jhon - INPUT & DATA PREPARATION
 
 struct Branch
 {
@@ -128,7 +128,7 @@ void printMatrix(const vector<vector<double>>& A)
 }
 
 
-// Riyaz – MATRIX CONSTRUCTION (MNA setup)
+// Riyaz - MATRIX CONSTRUCTION (MNA setup)
 
 void buildMNASystem(vector<vector<double>>& A, vector<double>& rhs, int& N, int& M, int& B)
 {
