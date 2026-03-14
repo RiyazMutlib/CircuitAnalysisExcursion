@@ -5,7 +5,8 @@ Single-file solution, visually organized into 3 parts:
   Riyaz – Matrix Construction (MNA setup)
   Christian – Solver + Output + Integration
 
-Matches assignment I/O and constraints (No extra credit yet).
+Matches assignment I/O and constraints (Extra Credit Include: Sparse Matrix Implementation
+ and sparse matrix solver).
 */
 
 #include <iostream>
@@ -37,6 +38,55 @@ struct Branch
 vector<Branch> branches;
 map<int, int> node_to_index;
 set<int> unique_nodes;
+struct SparseMatrix
+ {
+    int rows, cols;
+    vector<vector<pair<int, double>>> data; // row -> list of (col, value)
+
+    SparseMatrix(int r, int c) : rows(r), cols(c), data(r) {}
+
+    void set(int row, int col, double val)
+    {
+        if (abs(val) < 1e-12)
+            return; // treat as zero, do not store
+        for (auto& entry : data[row])
+        {
+            if (entry.first == col)
+            {
+                entry.second = val;
+                return;
+            }
+        }
+        data[row].emplace_back(col, val); // add new entry
+    }
+    double get(int row, int col)const
+    {
+        for (const auto& entry : data[row])
+        {
+            if (entry.first == col)
+                return entry.second;
+        }
+        return 0.0; // default zero
+    }
+    // convert from dense matrix
+    void fromDense(const vector<vector<double>>& A)
+    {
+		// determine size
+        int rows = (int)A.size();
+		int cols = (int)A[0].size();
+		// clear existing data
+        data.clear();
+		data.resize(rows);
+        for( int i = 0; i< rows; i++)
+        {
+            for (int j = 0; j < cols; j++)
+            {
+				if (abs(A[i][j]) > 1e-12)   
+                    data[i].emplace_back(j, A[i][j]);
+            }
+        }
+    }
+};
 
 void readNetlist()
 {
@@ -262,7 +312,56 @@ vector<double> solveSystem(vector<vector<double>> A, vector<double> b)
     }
     return x;
 }
+// Sparse matrix gaussinan solver
+// ===========================================================
+// SOLVER (Sparse Gaussian Elimination)
+// ===========================================================
+vector<double> solveSparseSystem(SparseMatrix A, vector<double> b)
+{
+    int n =(int)A.rows;
 
+    for (int i = 0; i < n; i++)
+    {
+        double pivot = A.get(i, i);
+
+        for (int k = i + 1; k < n; k++)
+        {
+            double factor = A.get(k, i) / pivot;
+
+            if (abs(factor) < 1e-12)
+                continue;
+
+            for (auto& col : A.data[i])
+            {
+                int j = col.first;
+                double val = col.second;
+
+                double newVal = A.get(k, j) - factor * val;
+                A.set(k, j, newVal);
+            }
+
+            b[k] -= factor * b[i];
+        }
+    }
+
+    vector<double> x(n);
+
+    for (int i = n - 1; i >= 0; i--)
+    {
+        double sum = b[i];
+
+        for (auto& col : A.data[i])
+        {
+            int j = col.first;
+            if (j > i)
+                sum -= col.second * x[j];
+        }
+
+        x[i] = sum / A.get(i, i);
+    }
+
+    return x;
+}
 // This matches the exact sample output shown in the assignment PDF
 string formatNumber(double val)
 {
@@ -319,7 +418,17 @@ int main()
     buildMNASystem(A, rhs, N, M, B);
 
     // Solve the system
-    vector<double> x = solveSystem(A, rhs);
+        vector<double> x;
+    if ((int)A.size() >= 4) {
+        cout << "Using Sparse Matrix solver \n";
+            SparseMatrix S((int)A.size(), (int)A[0].size());
+            S.fromDense(A);
+        x = solveSparseSystem(S, rhs);
+    }
+    else {
+        cout << "Using Dense Matrix solver \n";
+            x = solveSystem(A, rhs);
+    }
 
     // Build potentials map (ground is 0.0)
     map<int, double> potentials;
