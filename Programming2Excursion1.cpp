@@ -419,7 +419,7 @@ int main()
 
     // Solve the system
         vector<double> x;
-    if ((int)A.size() >= 4) {
+    if ((int)A.size() >= 15) {
         cout << "Using Sparse Matrix solver \n";
             SparseMatrix S((int)A.size(), (int)A[0].size());
             S.fromDense(A);
