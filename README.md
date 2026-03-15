@@ -35,7 +35,7 @@ Output (output.txt):
     The order of e, v, and i follows the order of nodes and branches in the netlist.
 
 Bonus points:
-    undecided
+    We are going for bonus points(sparse matrix data structure and the corresponding sparse matrix solver).
 
 Additional Notes:
 - Uses only standard C++ libraries (no external matrix libraries).
